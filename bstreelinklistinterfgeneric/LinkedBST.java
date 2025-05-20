@@ -2,14 +2,16 @@ package bstreelinklistinterfgeneric;
 
 import bstreeInterface.BinarySearchTree;
 import Exceptions.*;
+import java.util.Queue;
+import java.util.LinkedList;
 
 public class LinkedBST<E> implements BinarySearchTree<E> {
+    // Representa cada nodo del árbol
 
-    // 1. Clase interna Node
+    // Nodo interno
     class Node {
         public E data;
-        public Node left;
-        public Node right;
+        public Node left, right;
 
         public Node(E data) {
             this(data, null, null);
@@ -21,72 +23,54 @@ public class LinkedBST<E> implements BinarySearchTree<E> {
             this.right = right;
         }
     }
+    // Nodo raíz del árbol
 
-    // 2. Atributo raíz
     private Node root;
+    // Constructor
 
-    // 3. Constructor
     public LinkedBST() {
-        this.root = null;
+        root = null;
     }
 
-    // 4. Insertar
+    //  = OPERACIONES BÁSICAS DEL BST =====
+
+    // Inserta un dato, lanza excepción si está duplicado DE LA INTERFAZ 
+
     @Override
     public void insert(E data) throws ItemDuplicated {
         root = insert(root, data);
     }
 
     private Node insert(Node node, E data) throws ItemDuplicated {
-        // Si el nodo está vacío, se crea uno nuevo con el dato
         if (node == null) return new Node(data);
-
-        // Se compara el nuevo dato con el dato del nodo actual
         int cmp = ((Comparable<E>) data).compareTo(node.data);
-
-        if (cmp == 0) {
-            // Si son iguales, el dato ya existe: lanzar excepción
+        if (cmp == 0)
             throw new ItemDuplicated("Elemento duplicado: " + data);
-        } else if (cmp < 0) {
-            // Si es menor, insertar en el subárbol izquierdo
+        else if (cmp < 0)
             node.left = insert(node.left, data);
-        } else {
-            // Si es mayor, insertar en el subárbol derecho
+        else
             node.right = insert(node.right, data);
-        }
-
-        // Se devuelve el nodo actual con sus hijos actualizados
         return node;
-    
     }
 
-    // 5. Buscar
-    @Override
+    // Busca un dato, lanza excepción si no se encuentra
     public E search(E data) throws ItemNoFound {
         return search(root, data);
     }
 
     private E search(Node node, E data) throws ItemNoFound {
-        // Si el nodo es nulo, el valor no está en el árbol
         if (node == null)
             throw new ItemNoFound("No se encontró el elemento: " + data);
-
-        // Se compara el dato buscado con el del nodo actual
         int cmp = ((Comparable<E>) data).compareTo(node.data);
-
         if (cmp == 0)
-            // El valor es igual: lo encontró
             return node.data;
         else if (cmp < 0)
-            // Si es menor: buscar en el subárbol izquierdo
             return search(node.left, data);
         else
-            // Si es mayor: buscar en el subárbol derecho
             return search(node.right, data);
-    
     }
 
-    // 6. Eliminar
-    @Override
+    // Elimina un nodo con el valor indicado
     public void delete(E data) throws ExceptionIsEmpty {
         if (isEmpty())
             throw new ExceptionIsEmpty("El árbol está vacío.");
@@ -94,126 +78,32 @@ public class LinkedBST<E> implements BinarySearchTree<E> {
     }
 
     private Node delete(Node node, E data) {
-        // Si el nodo actual es null, no hay nada que eliminar
         if (node == null) return null;
-
-        // Comparar el dato a eliminar con el dato del nodo actual
         int cmp = ((Comparable<E>) data).compareTo(node.data);
-
-        if (cmp < 0) {
-            // Si el dato es menor, buscar en el subárbol izquierdo
+        if (cmp < 0)
             node.left = delete(node.left, data);
-        } else if (cmp > 0) {
-            // Si el dato es mayor, buscar en el subárbol derecho
+        else if (cmp > 0)
             node.right = delete(node.right, data);
-        } else {
-            // Si cmp == 0, el nodo actual es el que se debe eliminar
-
-            // Caso 1 y 2: uno o ningún hijo
+        else {
             if (node.left == null) return node.right;
             if (node.right == null) return node.left;
-
-            // Caso 3: el nodo tiene dos hijos
-            // Buscar el nodo mínimo del subárbol derecho (sucesor inorden)
             Node min = findMin(node.right);
-
-            // Reemplazar el dato actual con el del sucesor
             node.data = min.data;
-
-            // Eliminar el nodo duplicado en el subárbol derecho
             node.right = delete(node.right, min.data);
         }
-
-        // Retornar el nodo actualizado
         return node;
     }
 
     private Node findMin(Node node) {
-        while (node.left != null)
-            node = node.left;
+        while (node.left != null) node = node.left;
         return node;
     }
 
-    // 7. In-Orden
-    private void inOrder(Node node) {
-        if (node != null) {
-            inOrder(node.left);
-            System.out.println(" la raíz: " + node.data);
-            inOrder(node.right);
-        }
-    }
-
-    public void printInOrder() {
-        System.out.println("Recorrido en In-Orden:");
-        inOrder(root);
-    }
-
-    // 8. Pre-Orden
-    private void preOrder(Node node) {
-        if (node != null) {
-            System.out.println(" la raíz: " + node.data);
-            preOrder(node.left);
-            preOrder(node.right);
-        }
-    }
-
-    public void printPreOrder() {
-        System.out.println("Recorrido en Pre-Orden:");
-        preOrder(root);
-    }
-
-    // 9. Post-Orden
-    private void postOrder(Node node) {
-        if (node != null) {
-            postOrder(node.left);
-            postOrder(node.right);
-            System.out.println(" la raíz: " + node.data);
-        }
-    }
-
-    public void printPostOrder() {
-        System.out.println("Recorrido en Post-Orden:");
-        postOrder(root);
-    }
-
-    // 10. Mínimo y máximo
-    private E findMinNode(Node node) throws ItemNoFound {
-        if (node == null)
-            throw new ItemNoFound("");
-
-        while (node.left != null) {
-            node = node.left;
-        }
-
-        return search(node.data);
-    }
-
-    private E findMaxNode(Node node) throws ItemNoFound {
-        if (node == null)
-            throw new ItemNoFound("");
-
-        while (node.right != null) {
-            node = node.right;
-        }
-
-        return search(node.data);
-    }
-
-    public E getMin() throws ItemNoFound {
-        return findMinNode(root);
-    }
-
-    public E getMax() throws ItemNoFound {
-        return findMaxNode(root);
-    }
-
-    // Método requerido por la interfaz
     @Override
     public boolean isEmpty() {
         return root == null;
     }
 
-    // toString como inorden
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -227,8 +117,160 @@ public class LinkedBST<E> implements BinarySearchTree<E> {
             sb.append(node.data).append(" ");
             toString(node.right, sb);
         }
-        
-       
+    }
+
+    // Destruye todos los nodos del árbol
+
+    public void destroyNodes() throws ExceptionIsEmpty {
+        if (root == null)
+            throw new ExceptionIsEmpty("El árbol ya está vacío.");
+        root = null;
+        System.out.println("🌳 Todos los nodos han sido eliminados.");
+    }
+    // Cuenta todos los nodos del árbol (incluye hojas)
+
+    public int countAllNodes() {
+        return countAllNodes(root);
+    }
+    // Cuenta solo los nodos no-hoja
+ 
+    private int countAllNodes(Node node) {
+        if (node == null) return 0;
+        return 1 + countAllNodes(node.left) + countAllNodes(node.right);
+    }
+    // Retorna la altura del subárbol con raíz igual a x
+
+    public int countNodes() {
+        return countNodes(root);
+    }
+    // Retorna la cantidad de nodos en un nivel específico
+
+    private int countNodes(Node node) {
+        if (node == null || (node.left == null && node.right == null))
+            return 0;
+        return 1 + countNodes(node.left) + countNodes(node.right);
+    }
+
+    public int height(E x) {
+        Node node = root;
+        while (node != null) {
+            int cmp = ((Comparable<E>) x).compareTo(node.data);
+            if (cmp == 0) break;
+            else if (cmp < 0) node = node.left;
+            else node = node.right;
         }
-    
+        if (node == null) return -1;
+        return calculateHeight(node);
+    }
+
+    private int calculateHeight(Node node) {
+        if (node == null) return -1;
+        Queue<Node> queue = new LinkedList<>();
+        queue.add(node);
+        int height = -1;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            height++;
+            for (int i = 0; i < size; i++) {
+                Node current = queue.poll();
+                if (current.left != null) queue.add(current.left);
+                if (current.right != null) queue.add(current.right);
+            }
+        }
+        return height;
+    }
+
+    public int amplitude(int nivel) {
+        if (nivel < 0) return 0;
+        return countNodesAtLevel(root, nivel, 0);
+    }
+
+    private int countNodesAtLevel(Node node, int targetLevel, int currentLevel) {
+        if (node == null) return 0;
+        if (currentLevel == targetLevel) return 1;
+        return countNodesAtLevel(node.left, targetLevel, currentLevel + 1)
+             + countNodesAtLevel(node.right, targetLevel, currentLevel + 1);
+    }
+
+    // ========== EJERCICIO 02 ==========
+    // Retorna el área del árbol: hojas * altura
+
+    public int areaBST() {
+        if (root == null) return 0;
+
+        int hojas = 0;
+        int altura = calculateHeight(root);
+
+        Queue<Node> queue = new LinkedList<>();
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            Node current = queue.poll();
+            if (current.left == null && current.right == null)
+                hojas++;
+            if (current.left != null) queue.add(current.left);
+            if (current.right != null) queue.add(current.right);
+        }
+
+        return hojas * altura;
+    }
+    // Dibuja el árbol visualmente con indentación
+
+    public void drawBST() {
+        drawBST(root, 0);
+    }
+
+    private void drawBST(Node node, int nivel) {
+        if (node != null) {
+            drawBST(node.right, nivel + 1);
+            System.out.println("    ".repeat(nivel) + "📍 " + node.data);
+            drawBST(node.left, nivel + 1);
+        }
+    }
+
+    // JERCICIO 03 
+    // Imprime el árbol con sangría y paréntesis (estilo jerárquico)
+
+    public void parenthesize() {
+        parenthesize(root, 0);
+    }
+
+    private void parenthesize(Node node, int level) {
+        if (node == null) return;
+
+        System.out.println("  ".repeat(level) + node.data);
+
+        if (node.left != null || node.right != null) {
+            System.out.println("  ".repeat(level) + "(");
+            if (node.left != null)
+                parenthesize(node.left, level + 1);
+            if (node.right != null)
+                parenthesize(node.right, level + 1);
+            System.out.println("  ".repeat(level) + ")");
+        }
+    }
+    // Retorna el valor mínimo del árbol
+
+    public E getMin() throws ItemNoFound {
+        return findMinNode(root);
+    }
+    // Retorna el valor máximo del árbol
+
+    public E getMax() throws ItemNoFound {
+        return findMaxNode(root);
+    }
+
+    private E findMinNode(Node node) throws ItemNoFound {
+        if (node == null)
+            throw new ItemNoFound("No hay mínimo.");
+        while (node.left != null) node = node.left;
+        return node.data;
+    }
+
+    private E findMaxNode(Node node) throws ItemNoFound {
+        if (node == null)
+            throw new ItemNoFound("No hay máximo.");
+        while (node.right != null) node = node.right;
+        return node.data;
+    }
 }
